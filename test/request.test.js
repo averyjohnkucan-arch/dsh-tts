@@ -1,0 +1,6 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import {request,splitText,description} from '../lib/request.js';
+test('searchable description explains expression limitations',()=>{for(const word of ['TTS','text-to-speech','voiceover','NONE','SSML'])assert.ok(description.includes(word));});
+test('long mixed Unicode text stays within model character limit without losing words',()=>{for(const text of ['A sentence with words. '.repeat(40),'你好世界。'.repeat(90),'😀'.repeat(340),'word'.repeat(150)]){const chunks=splitText(text);assert.ok(chunks.length>1);assert.ok(chunks.every(c=>Array.from(c).length<=150));assert.equal(chunks.join('').replace(/\s/gu,''),text.replace(/\s/gu,''));}});
+test('prefers sentence boundaries',()=>{assert.deepEqual(splitText('A short sentence. '+'Another sentence of words. '.repeat(7)).slice(0,1),['A short sentence. '+'Another sentence of words. '.repeat(4).trim()]);});
+test('rejects empty, oversized, unsupported tags and invalid seeds',()=>{for(const args of [{text:''},{text:'x'.repeat(12001)},{text:'[cough] hello'},{text:'<speak>Hello</speak>'},{text:'hello',seed:-1}])assert.throws(()=>request(args));assert.deepEqual(request({text:'Hello!'}),{chunks:['Hello!'],seed:42});});

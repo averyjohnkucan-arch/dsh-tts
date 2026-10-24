@@ -1,0 +1,17 @@
+// Optional integration check against an existing DSH + Tool Manager installation.
+import assert from 'node:assert/strict';import {createRequire} from 'node:module';import {mkdtemp,rm,writeFile} from 'node:fs/promises';import {tmpdir} from 'node:os';import {join} from 'node:path';import {pathToFileURL} from 'node:url';
+const root=process.env.DSH_ROOT;if(!root)throw Error('Set DSH_ROOT to your DeepSeek Harness checkout. This check does not start inference.');
+const require=createRequire(join(root,'plugins/dsh-tool-manager/package.json'));const load=async n=>import(require.resolve(n));
+const {Context,Service}=await load('@deepseek-ai/cordis');const {default:SystemPrompt}=await load('@deepseek-ai/dsh-system-prompt');const {default:ToolRuntime}=await load('@deepseek-ai/dsh-tools');const {default:SessionStore}=await load('@deepseek-ai/dsh-session');const {default:Projection}=await load('@deepseek-ai/dsh-session-projection');const {default:Skills}=await load('@deepseek-ai/dsh-skill');const {createScope}=await load('@deepseek-ai/dsh-scope');
+const plugin=await import('../index.js'),manager=await import(pathToFileURL(join(root,'plugins/dsh-tool-manager/index.js'))),{defaults}=await import(pathToFileURL(join(root,'plugins/dsh-tool-manager/lib/settings.js')));
+const dir=await mkdtemp(join(tmpdir(),'tts-discovery-')),ctx=new Context();let scope;
+try{
+ new SystemPrompt(ctx,{});new ToolRuntime(ctx);new SessionStore(ctx);new Projection(ctx);new Skills(ctx);ctx.provide('attachments',{});const agents=[];
+ new(class extends Service{constructor(){super(ctx,'agents');}list(){return agents;}})();new(class extends Service{constructor(){super(ctx,'webServer');}register(){return()=>{};}getOrigin(){return 'http://127.0.0.1';}})();
+ const fiber=await ctx.plugin(plugin,{dataDir:join(dir,'runtime')});assert.deepEqual(ctx.tools.schemas().map(x=>x.name),['text_to_speech']);
+ const agent={session:ctx.sessions.create('tts-discovery',{meta:{cwd:dir}})};scope=createScope(ctx,agent);agent.ctx=scope.ctx;agents.push(agent);
+ await writeFile(join(dir,'settings.json'),JSON.stringify({...defaults(),defaultMode:'essential',compactBrowser:false,fastSelection:false}));const mf=await ctx.plugin(manager,{dataDir:dir});const step=()=>ctx.waterfall('agent/pre-step',{agent},async()=>({messages:[]}));await step();assert.equal(ctx.tools.get('text_to_speech',agent),undefined);
+ const call=(name,args)=>ctx.tools.execute({callId:name+'-'+Math.random(),name,arguments:args,agent,signal:new AbortController().signal});
+ for(const task of ['TTS','text-to-speech','read aloud narration voiceover']){const r=await call('tool_manager_search',{task});assert.equal(r.isError,false);assert.match(JSON.stringify(r.content),/text_to_speech/);}
+ const selected=await call('tool_manager_select',{names:['text_to_speech']});assert.equal(selected.isError,false);agent.session.append('tool/result',{turn:0,step:0,message:{id:'select-tts',role:'tool',toolCallId:'select',content:selected.content,source:{kind:'tool',name:'tool_manager_select'}},meta:selected.meta},{surfaceOp:'append'});await step();assert.ok(ctx.tools.get('text_to_speech',agent));await fiber.dispose();await step();assert.equal(ctx.tools.get('text_to_speech',agent),undefined);await mf.dispose();console.log('PASS: direct registration, search hiding/discovery, selection and disable cleanup. No model inference was started.');
+}finally{await scope?.dispose();await ctx.fiber.dispose();await rm(dir,{recursive:true,force:true});}
