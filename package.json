@@ -1,7 +1,7 @@
 {
   "name": "dsh-tts",
-  "version": "0.1.0",
-  "description": "Local Audio8 text-to-speech for DeepSeek Harness: searchable TTS, long-text chunking and inline audio playback.",
+  "version": "0.2.0",
+  "description": "Local CPU text-to-speech for DeepSeek Harness with Qwen3-TTS and Audio8, delivery instructions and inline audio playback.",
   "type": "module",
   "license": "MIT",
   "engines": {
@@ -22,14 +22,16 @@
     "scripts",
     "README.md",
     "LICENSE",
-    "VALIDATION.md"
+    "VALIDATION.md",
+    "experiments"
   ],
   "scripts": {
     "test": "node --test test/*.test.js",
     "check": "node --check index.js && node --check client.js",
     "setup": "python3 scripts/setup.py",
     "smoke": "node scripts/smoke.mjs",
-    "check:discovery": "node scripts/check-discovery.mjs"
+    "check:discovery": "node scripts/check-discovery.mjs",
+    "setup:qwen": "python3 scripts/setup_qwen.py"
   },
   "peerDependencies": {
     "@deepseek-ai/cordis": "~4.0.5",
