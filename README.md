@@ -111,3 +111,11 @@ Local qualification also generates real speech through DSH's Tools and LocalAtta
 - [Audio8](https://github.com/Edge0-AI/Audio8_TTS), source revision `07e40f5d0b03fc473635ef378654bfb581027ac3`; [0.1B ONNX INT8 checkpoint](https://huggingface.co/Audio8/audio8-TTS-0.1B-ONNX-INT8), revision `317c12d4e0da83847b594fcf8bd74bf2c76615ec`.
 
 The plugin is MIT. These model/source projects are Apache-2.0 per their upstream notices; downloaded source retains its license. Generated audio, private settings, credentials, model weights and runtime binaries are excluded from the repository.
+
+## Recommended models and verified downloads
+
+Open **Recommended models · exact revisions and hashes** in this plugin's settings card. The catalog records the checkpoints/components from the owner's configured setup with immutable repository revisions and SHA-256 (or Git blob hashes for small snapshot assets). Expand **Files, sizes and exact identities** before selecting a set.
+
+**Download / verify recommended** saves a complete pinned set in this plugin's private `recommended-models` directory. Downloads resume from partial files, validate content before publishing final files, preserve existing models, and expose progress, cancellation and explicit failures. Repeating the action verifies/reuses existing files. Downloads do not start inference. **Add downloaded files** fills the existing model import/edit workflow for review and saving. Runtime installation remains separate.
+
+Some configured artifacts are locally converted or assembled from multiple sources. Their exact local hashes are listed, but downloading the original publisher checkpoint cannot recreate those bytes. Use **Add existing model** and the normal importer for those entries. No incomplete component set is presented as a working download. Recommendations describe the saved setup; they do not establish memory fit or model quality on another computer.

@@ -23,7 +23,9 @@
     "README.md",
     "LICENSE",
     "VALIDATION.md",
-    "experiments"
+    "experiments",
+    "lib/recommended-models.mjs",
+    "lib/recommended-models.json"
   ],
   "scripts": {
     "test": "node --test test/*.test.js",
