@@ -4,3 +4,7 @@ __pycache__/
 *.pyc
 outputs/
 .env
+
+# DSH compatibility workflow scratch data
+.compat-home/
+.compat-packed/
